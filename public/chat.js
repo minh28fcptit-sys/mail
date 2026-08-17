@@ -1522,7 +1522,7 @@ function fmtBirthday(v) {
 }
 
 const GENDERS = { male: "Nam", female: "Nữ", other: "Khác" };
-const RELATIONS = { single: "Độc thân", dating: "Đang hẹn hò", married: "Đã kết hôn", secret: "Bí mật" };
+const RELATIONS = { single: "Độc thân", dating: "Đang hẹn hò", married: "Đã kết hôn", secret: "Chỉ là lốp dự phòng 😔" };
 
 
 /* ------------------------------------------- Nhạc trang cá nhân (đĩa quay) */
