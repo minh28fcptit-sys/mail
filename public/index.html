@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="theme-color" content="#070912" />
+  <title>Mail OTP — Lấy mã xác minh</title>
+  <meta name="description"
+    content="Đọc hộp mail và lấy mã xác minh, lọc theo người gửi, tiêu đề và lý do trong mail." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=DM+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/chat.css" />
+  <script src="/no-zoom.js" defer></script>
+</head>
+
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand-mark">✉️</div>
+      <div class="brand-txt">
+        <h1>Mail OTP</h1>
+        <p id="subtitle">Lọc theo người gửi · tiêu đề · lý do</p>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="account">
+        <div class="mail">
+          <b id="account">Đang tải…</b>
+          <span id="accountState">Kiểm tra kết nối…</span>
+        </div>
+        <span class="pill"><i class="dot off" id="dot"></i><span id="filterState">—</span></span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">① Chọn loại mail</div>
+      <div class="rules" id="rules"></div>
+    </section>
+
+    <button class="btn" id="getBtn" disabled>Lấy mã xác minh</button>
+
+    <section class="results" id="results"></section>
+  </main>
+
+  <a class="chat-fab" href="/chat" id="chatFab">
+    <img src="https://cdn.jsdelivr.net/npm/simple-icons@11/icons/messenger.svg" alt="" width="18" height="18"
+      style="filter:invert(1)" /><span>Tin nhắn</span><span class="fab-badge" id="fabBadge" hidden>0</span>
+  </a>
+
+  <script>
+    (function () {
+      var t = localStorage.getItem("chat.token"); if (!t) return;
+      fetch("/api/chat/unread", { headers: { Authorization: "Bearer " + t } }).then(r => r.json()).then(d => {
+        const b = document.getElementById("fabBadge");
+        if (d.unreadTotal > 0) { b.hidden = false; b.textContent = d.unreadTotal > 99 ? "99+" : d.unreadTotal; }
+      }).catch(() => { });
+    })();
+  </script>
+
+  <div class="toast" id="toast"></div>
+  <script src="/app.js"></script>
+</body>
+
+</html>

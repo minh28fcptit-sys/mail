@@ -1,0 +1,29 @@
+{
+  "name": "mail-otp-reader",
+  "version": "4.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Web doc mail & lay OTP + chatbox realtime Socket.IO (MongoDB)",
+  "main": "server/index.js",
+  "scripts": {
+    "setup": "node setup.js",
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "express": "^4.19.2",
+    "imapflow": "^1.0.164",
+    "mailparser": "^3.7.1",
+    "mongoose": "^8.6.0",
+    "socket.io": "^4.7.5",
+    "web-push": "^3.6.7"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.2.0",
+    "socket.io-client": "^4.8.3"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "Tin nhắn — Mail OTP",
+  "short_name": "Tin nhắn",
+  "description": "Hộp tin nhắn realtime: nhận tin ngay, thông báo đẩy và số tin chưa đọc trên icon app.",
+  "id": "/chat",
+  "start_url": "/chat?src=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#070912",
+  "theme_color": "#070912",
+  "lang": "vi",
+  "categories": [
+    "social",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="theme-color" content="#070912" />
+  <title>Tin nhắn realtime — Mail OTP</title>
+  <meta name="description"
+    content="Chatbox realtime Socket.IO: tin nhắn tới ngay, trạng thái online/offline tức thì, sửa & xoá tin nhắn, quản lý nhóm, cảm xúc Facebook và quà tặng." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Font tải không chặn hiển thị: trang hiện ngay bằng font hệ thống rồi đổi sang font đẹp -->
+  <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=DM+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=DM+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet" />
+  </noscript>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/chat.css" />
+  <!-- Ghim ra màn hình chính (PWA) + thông báo đẩy có số đỏ trên icon -->
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Tin nhắn" />
+  <meta name="application-name" content="Tin nhắn" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+  <script src="/no-zoom.js" defer></script>
+</head>
+
+<body class="chat-body">
+
+  <main class="phone" id="phone">
+
+    <!-- ================= DANH SÁCH HỘI THOẠI ================= -->
+    <section class="pane pane-list" id="paneList">
+      <header class="chat-top">
+        <a class="icon-btn" href="/" aria-label="Về trang lấy mã">←</a>
+        <div class="chat-top-txt">
+          <h1>Tin nhắn</h1>
+          <p id="storeState">Đang kết nối…</p>
+        </div>
+        <span class="badge-total" id="badgeTotal" hidden>0</span>
+        <button class="icon-btn" id="newBtn" aria-label="Tạo nhóm / nhắn tin mới">✚</button>
+      </header>
+
+      <div class="me-bar" id="meBar" hidden>
+        <button class="avatar-btn" id="meAvatarBtn" type="button" title="Xem trang cá nhân">
+          <img class="avatar sm" id="meAvatar" alt="" />
+          <i class="dot-online" id="meDot"></i>
+        </button>
+        <div class="me-txt"><b id="meName">—</b><span id="meStore">—</span></div>
+        <button class="ghost-btn" id="meEditBtn" type="button" title="Trang cá nhân của tôi">👤</button>
+        <button class="ghost-btn" id="bellBtn" type="button" title="Bật thông báo">🔔</button>
+        <button class="ghost-btn" id="logoutBtn" type="button">Đăng xuất</button>
+      </div>
+
+      <div class="search-wrap">
+        <input id="search" class="search" type="search" placeholder="Tìm cuộc trò chuyện…" autocomplete="off" />
+      </div>
+
+      <div class="quick-row">
+        <button class="quick" id="quickGroup" type="button">Tạo nhóm mới</button>
+        <button class="quick" id="quickDirect" type="button">Nhắn riêng</button>
+      </div>
+
+      <div class="convs" id="convs">
+        <div class="skel-row"></div>
+        <div class="skel-row"></div>
+        <div class="skel-row"></div>
+      </div>
+    </section>
+
+    <!-- ================= KHUNG CHAT ================= -->
+    <section class="pane pane-thread" id="paneThread" aria-hidden="true">
+      <header class="chat-top thread-top">
+        <button class="icon-btn" id="backBtn" aria-label="Quay lại">←</button>
+        <span class="avatar-wrap">
+          <img class="avatar sm" id="thAvatar" alt="" />
+          <i class="dot-online" id="thDot" hidden></i>
+        </span>
+        <div class="chat-top-txt">
+          <h2 id="thTitle">—</h2>
+          <p id="thState">—</p>
+        </div>
+        <button class="icon-btn" id="infoBtn" aria-label="Quản lý hội thoại">⋯</button>
+      </header>
+
+      <div class="messages" id="messages"></div>
+
+      <div class="typing" id="typing" hidden><span></span><span></span><span></span><b id="typingWho"></b></div>
+
+      <div class="tray" id="giftTray" hidden></div>
+      <div class="tray emoji-tray" id="emojiTray" hidden></div>
+
+      <!-- Cảm xúc kiểu Facebook: bấm là gửi ngay -->
+      <div class="fb-bar">
+        <img class="fb-logo" id="fbIcon" alt="Cảm xúc kiểu Facebook" />
+        <div class="fb-icons" id="fbIcons"></div>
+      </div>
+
+      <div class="edit-hint" id="editHint" hidden>
+        Đang sửa tin nhắn · <button type="button" id="editCancel">Huỷ</button>
+      </div>
+
+      <div class="pending-imgs" id="pendingImgs" hidden></div>
+
+      <form class="composer" id="composer" autocomplete="off">
+        <button type="button" class="icon-btn round" id="photoBtn" aria-label="Gửi ảnh" title="Gửi ảnh">🖼️</button>
+        <input id="photoInput" type="file" accept="image/*" multiple hidden />
+        <button type="button" class="icon-btn round" id="giftBtn" aria-label="Gửi quà">
+          <img id="giftIcon" alt="Quà tặng" />
+        </button>
+        <button type="button" class="icon-btn round" id="emojiBtn" aria-label="Chèn emoji">🙂</button>
+        <input id="input" class="composer-input" placeholder="Nhập tin nhắn…" />
+        <button type="submit" class="send" id="sendBtn" aria-label="Gửi">➤</button>
+      </form>
+
+      <!-- Nhóm thông báo: chỉ đọc + thả cảm xúc -->
+      <div class="locked-note" id="lockedNote" hidden>
+        <b>🔒 Chỉ quản trị viên được đăng tin trong nhóm này</b>
+        <span>Bạn vẫn có thể thả cảm xúc. Vui lòng nhắn tin riêng hoặc tạo nhóm mới để trò chuyện nhé.</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================= ĐĂNG NHẬP / TẠO TÀI KHOẢN ================= -->
+  <div class="auth" id="auth" hidden>
+    <form class="auth-card" id="authForm">
+      <img class="auth-logo" id="authLogo" alt="" />
+      <h2 id="authTitle">Vào hộp tin nhắn</h2>
+      <p class="auth-sub" id="authSub">Nhập tên và tạo mật khẩu. Thiết bị này sẽ tự đăng nhập lần sau.</p>
+      <label class="field"><span>Tên của bạn</span>
+        <input id="authName" maxlength="24" placeholder="VD: Huấn Rose" autocomplete="username" required />
+      </label>
+      <label class="field"><span>Mật khẩu</span>
+        <input id="authPass" type="password" minlength="4" placeholder="Tối thiểu 4 ký tự"
+          autocomplete="current-password" required />
+      </label>
+      <p class="auth-err" id="authErr" hidden></p>
+      <button class="btn-primary" id="authSubmit" type="submit">Tiếp tục</button>
+      <p class="auth-note">Đăng nhập ở thiết bị khác: nhập đúng tên + mật khẩu đã tạo.</p>
+    </form>
+  </div>
+
+  <!-- ================= SHEET: TẠO NHÓM / NHẮN RIÊNG / THÊM THÀNH VIÊN ================= -->
+  <div class="sheet-wrap" id="sheetWrap" hidden>
+    <div class="sheet" id="sheet">
+      <div class="sheet-head">
+        <b id="sheetTitle">Tạo nhóm</b>
+        <button class="icon-btn" id="sheetClose" type="button" aria-label="Đóng">✕</button>
+      </div>
+      <label class="field" id="groupNameField"><span>Tên nhóm</span>
+        <input id="groupName" maxlength="40" placeholder="VD: Nhóm MLBB Team" />
+      </label>
+      <div class="ava-pick" id="groupAvaPick" hidden></div>
+      <input id="userSearch" class="search" type="search" placeholder="Tìm người dùng…" />
+      <div class="user-list" id="userList"></div>
+      <button class="btn-primary" id="sheetSubmit" type="button">Tạo</button>
+    </div>
+  </div>
+
+  <!-- ================= SHEET: QUẢN LÝ HỘI THOẠI / NHÓM ================= -->
+  <div class="sheet-wrap" id="infoWrap" hidden>
+    <div class="sheet" id="infoSheet">
+      <div class="sheet-head">
+        <b id="infoTitle">Quản lý</b>
+        <button class="icon-btn" id="infoClose" type="button" aria-label="Đóng">✕</button>
+      </div>
+      <div id="infoBody"></div>
+    </div>
+  </div>
+
+  <!-- ================= SHEET: ĐỔI ẢNH ĐẠI DIỆN ================= -->
+  <div class="sheet-wrap" id="avaWrap" hidden>
+    <div class="sheet">
+      <div class="sheet-head">
+        <b>Chọn ảnh đại diện</b>
+        <button class="icon-btn" id="avaClose" type="button" aria-label="Đóng">✕</button>
+      </div>
+      <div class="ava-upload">
+        <button class="btn-primary" id="avaUploadBtn" type="button">📤 Tải ảnh từ thiết bị</button>
+        <input id="avaUploadInput" type="file" accept="image/*" hidden />
+        <p class="hint-sm">Ảnh được lưu trên kho Cloudinary, hệ thống chỉ lưu đường dẫn.</p>
+      </div>
+      <div class="ava-pick" id="avaPick"></div>
+    </div>
+  </div>
+
+  <!-- ================= CẮT / KÉO / ZOOM ẢNH ĐẠI DIỆN ================= -->
+  <div class="crop-wrap" id="cropWrap" hidden>
+    <div class="crop-card">
+      <div class="crop-head">
+        <b>Chỉnh ảnh đại diện</b>
+        <button class="icon-btn" id="cropCancel" type="button" aria-label="Đóng">✕</button>
+      </div>
+      <p class="hint-sm">Kéo để di chuyển • Cuộn chuột hoặc chụm 2 ngón để phóng to</p>
+      <div class="crop-stage" id="cropStage">
+        <img class="crop-img" id="cropImg" alt="Ảnh đại diện" draggable="false" />
+        <div class="crop-mask"></div>
+      </div>
+      <div class="crop-zoom">
+        <button class="icon-btn round" id="cropOut" type="button" aria-label="Thu nhỏ">−</button>
+        <input id="cropRange" type="range" min="1" max="4" step="0.01" value="1" aria-label="Phóng to" />
+        <button class="icon-btn round" id="cropIn" type="button" aria-label="Phóng to">+</button>
+      </div>
+      <div class="crop-actions">
+        <button class="btn-ghost" id="cropReset" type="button">Đặt lại</button>
+        <button class="btn-primary" id="cropSave" type="button">Dùng ảnh này</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL GIỮA MÀN HÌNH: TRANG CÁ NHÂN ================= -->
+  <div class="modal-wrap" id="profileWrap" hidden>
+    <div class="modal profile-modal" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+      <div class="modal-head">
+        <b id="profileTitle">Trang cá nhân</b>
+        <button class="icon-btn" id="profileClose" type="button" aria-label="Đóng">✕</button>
+      </div>
+      <div class="modal-body" id="profileBody"></div>
+    </div>
+  </div>
+
+  <!-- ================= XEM ẢNH NGAY TRONG WEB (không mở tab mới) ================= -->
+  <div class="lightbox" id="lightbox" hidden>
+    <button class="lb-close" id="lbClose" type="button" aria-label="Đóng">✕</button>
+    <button class="lb-nav prev" id="lbPrev" type="button" aria-label="Ảnh trước">‹</button>
+    <img class="lb-img" id="lbImg" alt="Ảnh" />
+    <button class="lb-nav next" id="lbNext" type="button" aria-label="Ảnh sau">›</button>
+    <div class="lb-zoom">
+      <button class="lb-zbtn" id="lbZoomOut" type="button" aria-label="Thu nhỏ">−</button>
+      <button class="lb-zbtn" id="lbZoomReset" type="button" aria-label="Cỡ gốc">⟲</button>
+      <button class="lb-zbtn" id="lbZoomIn" type="button" aria-label="Phóng to">+</button>
+    </div>
+    <div class="lb-count" id="lbCount"></div>
+  </div>
+
+  <div class="msg-menu" id="msgMenu" hidden></div>
+  <div class="react-pop" id="reactPop" hidden></div>
+  <div class="toast" id="toast"></div>
+
+  <script src="/socket.io/socket.io.js" defer></script>
+  <script src="/chat.js" defer></script>
+</body>
+
+</html>

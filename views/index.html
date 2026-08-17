@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="theme-color" content="#070912" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Quản trị · Mail OTP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=DM+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="/no-zoom.js" defer></script>
+</head>
+
+<body>
+
+  <div id="loginView" class="center" hidden>
+    <form class="card login" id="loginForm">
+      <div class="brand-mark" style="margin-bottom:14px">🔐</div>
+      <h2 style="font-size:19px;margin-bottom:4px">Trang quản trị</h2>
+      <p class="hint" style="margin:0 0 16px">Nhập mật khẩu để cấu hình hộp thư và bộ lọc.</p>
+      <div class="field"><label for="pwd">Mật khẩu</label><input id="pwd" type="password"
+          autocomplete="current-password" /></div>
+      <button class="btn" type="submit">Đăng nhập</button>
+    </form>
+  </div>
+
+  <main class="shell" id="appView" hidden>
+    <header class="topbar">
+      <div class="brand-mark">⚙️</div>
+      <div class="brand-txt">
+        <h1>Quản trị</h1>
+        <p>Hộp thư · bộ lọc · kiểm thử</p>
+      </div>
+      <button class="btn ghost sm" id="logout" style="margin-left:auto">Thoát</button>
+    </header>
+
+    <nav class="tabs">
+      <button data-tab="mail" class="on">Hộp thư</button>
+      <button data-tab="rules">Bộ lọc</button>
+      <button data-tab="test">Kiểm thử</button>
+      <button data-tab="media">Kho ảnh</button>
+      <button data-tab="push">Thông báo</button>
+    </nav>
+
+    <!-- Hộp thư -->
+    <section data-panel="mail">
+      <div class="card">
+        <div class="card-title">Kết nối IMAP (chỉ đọc mail)</div>
+        <div class="field"><label>Email</label><input id="imapUser" inputmode="email" autocomplete="username"
+            placeholder="ban@gmail.com" /></div>
+        <div class="field"><label>App password</label><input id="imapPass" type="password" placeholder="********" />
+          <div class="hint">Gmail: bật 2FA rồi tạo App Password 16 ký tự.</div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label>IMAP host</label><input id="imapHost" /></div>
+          <div class="field"><label>Port</label><input id="imapPort" inputmode="numeric" /></div>
+        </div>
+        <div class="field"><label>Hộp thư</label><input id="imapBox" placeholder="INBOX" /></div>
+        <div class="switch"><span>Bật bộ lọc điều kiện</span><input type="checkbox" id="filterEnabled" /></div>
+        <div class="field" style="margin-top:12px"><label>Đổi mật khẩu quản trị</label><input id="adminPwd"
+            type="password" placeholder="Để trống nếu giữ nguyên" /></div>
+        <div class="btn-row">
+          <button class="btn ghost" id="testBtn">Kiểm tra kết nối</button>
+          <button class="btn" id="saveBtn1">Lưu</button>
+        </div>
+        <div class="out" id="testOut" hidden></div>
+      </div>
+    </section>
+
+    <!-- Bộ lọc -->
+    <section data-panel="rules" hidden>
+      <div class="card">
+        <div class="card-title">Loại mail &amp; điều kiện lọc</div>
+        <div id="ruleList"></div>
+        <button class="btn ghost" id="addRule" style="margin-top:12px">+ Thêm loại mail</button>
+      </div>
+      <div class="sticky-save"><button class="btn" id="saveBtn2">Lưu bộ lọc</button></div>
+    </section>
+
+    <!-- Kho ảnh Cloudinary -->
+    <section data-panel="media" hidden>
+      <div class="card">
+        <div class="card-title">Thêm kho ảnh (Cloudinary API key)</div>
+        <div class="field"><label>Tên gợi nhớ</label><input id="msName" placeholder="Kho 1" /></div>
+        <div class="field"><label>Cloud name</label><input id="msCloud" placeholder="dxxxxxx" /></div>
+        <div class="grid2">
+          <div class="field"><label>API key</label><input id="msKey" placeholder="123456789012345" /></div>
+          <div class="field"><label>API secret</label><input id="msSecret" type="password" placeholder="********" />
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label>Thư mục lưu</label><input id="msFolder" placeholder="mail-chat" /></div>
+          <div class="field"><label>Đầy khi đạt (%)</label><input id="msFull" inputmode="numeric" placeholder="90" />
+          </div>
+        </div>
+        <div class="hint">Khi kho đạt mức đầy, hệ thống tự chuyển sang kho còn trống tiếp theo.<br>
+          Muốn xem dung lượng thật, API key cần quyền <b>read</b> (Cloudinary Console → Settings → API Keys → bật quyền
+          Admin API/read, hoặc dùng key mặc định của tài khoản). Key chỉ có quyền ghi vẫn thêm và tải ảnh được bình
+          thường,
+          chỉ là không hiện được số liệu dung lượng.</div>
+        <div class="btn-row">
+          <button class="btn ghost" id="msCheckNew">Kiểm tra key</button>
+          <button class="btn" id="msAdd">Thêm kho</button>
+        </div>
+        <div class="out" id="msOut" hidden></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Danh sách kho · dung lượng thật</div>
+        <div id="msList"></div>
+        <button class="btn ghost" id="msRefresh" style="margin-top:12px">Kiểm tra tất cả</button>
+      </div>
+    </section>
+
+    <!-- Thông báo đẩy -->
+    <section data-panel="push" hidden>
+      <div class="card">
+        <div class="card-title">Thông báo đẩy &amp; số đỏ trên icon app</div>
+        <div class="out" id="pushState">Đang tải…</div>
+        <div class="field"><label>Liên hệ (subject VAPID)</label><input id="pushSubject"
+            placeholder="mailto:admin@tenmien.com" /></div>
+        <div class="hint">
+          Bấm <b>Tạo khoá VAPID</b> một lần là xong — người dùng mở web, bấm 🔔 để bật thông báo.<br>
+          Trên iPhone (iOS 16.4+): Safari → <b>Chia sẻ</b> → <b>Thêm vào Màn hình chính</b>, mở app vừa ghim rồi bấm 🔔.
+          Số tin nhắn chưa đọc hiện thành số đỏ trên icon app (trong web hơn 9 tin thì ghi <b>9+</b>).
+          Bắt buộc chạy trên HTTPS với tên miền thật.<br>
+          Lưu ý: tạo lại khoá sẽ khiến mọi thiết bị phải bật thông báo lại.
+        </div>
+        <div class="btn-row">
+          <button class="btn ghost" id="pushTest">Gửi thử</button>
+          <button class="btn ghost" id="pushGen">Tạo khoá VAPID</button>
+          <button class="btn" id="pushSave">Lưu liên hệ</button>
+        </div>
+        <div class="out" id="pushOut" hidden></div>
+      </div>
+    </section>
+
+    <!-- Kiểm thử -->
+    <section data-panel="test" hidden>
+      <div class="card">
+        <div class="card-title">Thử với mail mẫu</div>
+        <div class="field"><label>Người gửi</label><input id="sFrom"
+            placeholder="Moonton Account &lt;donotreply@register-sc.moonton.com&gt;" /></div>
+        <div class="field"><label>Tiêu đề</label><input id="sSubject" placeholder="Mã xác minh" /></div>
+        <div class="field"><label>Nội dung mail</label><textarea id="sBody"
+            placeholder="Mã Xác Minh:&#10;459048&#10;Lý Do: Thay Đổi Địa Chỉ Email"></textarea></div>
+        <button class="btn" id="classifyBtn">Đối chiếu tất cả loại mail</button>
+        <div class="out" id="classifyOut" hidden></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Quét hộp thư thật</div>
+        <div class="field"><label>Loại mail</label><select id="previewRule"></select></div>
+        <button class="btn ghost" id="previewBtn">Xem mail khớp / bị loại</button>
+        <div class="out" id="previewOut" hidden></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="/092819/assets/admin.js"></script>
+</body>
+
+</html>
